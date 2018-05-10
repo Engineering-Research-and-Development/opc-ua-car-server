@@ -9,12 +9,8 @@ A simple server that represents a car with the follow structure:
     * Engine (obj)
         * Temperature (attr)
         * Oxygen (attr)
-        
-<div style="background-image: url('https://github.com/is3labengrd/opc-ua-car-server/blob/master/img/car_schema.png');">
-<b>CIAO</b>
-</div>
 
-
+![Car Schema](https://github.com/is3labengrd/opc-ua-car-server/blob/master/img/car_schema.png)
 
 
 ### Install from source
