@@ -15,7 +15,7 @@ A simple server that represents a car with the follow structure:
 
 ### Install from source
 
-    $ git clone "https://github.com/is3labengrd/opc-ua-car-server"
+    $ git clone "https://github.com/Engineering-Research-and-Development/opc-ua-car-server"
     $ cd opc-ua-car-server
     $ npm install
     $ node car.js
