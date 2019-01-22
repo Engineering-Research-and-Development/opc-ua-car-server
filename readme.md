@@ -10,7 +10,7 @@ A simple server that represents a car with the follow structure:
         * Temperature (attr)
         * Oxygen (attr)
 
-![Car Schema](https://github.com/is3labengrd/opc-ua-car-server/blob/master/img/car_schema.png)
+![Car Schema](https://github.com/Engineering-Research-and-Development/opc-ua-car-server/blob/master/img/car_schema.png)
 
 
 ### Install from source
