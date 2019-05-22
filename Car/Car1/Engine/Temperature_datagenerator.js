@@ -1,18 +1,27 @@
 var opcua = require("node-opcua");
 
 module.exports = {
-  Temperature_datagenerator: function(addressSpace, Engine) {
+  Temperature_datagenerator: function(addressSpace, SharedCarProperties, TimingSharedProperties, Engine) {
 
-    var Temperature = 80;
-    setInterval(function(){
-      if(Temperature<100){
-        Temperature+=1;
-      };
-      if(Temperature>=100){
-        Temperature=80;
-      };
+    var TEMPERATURE_STEP    = 2;
+    var MIN_TEMPERATURE     = 20;
+    var MAX_TEMPERATURE     = 80;
 
-    }, 10000);
+    var Temperature = MIN_TEMPERATURE; // When the engine is not running this is its temperature
+
+    setInterval(function() {
+        if(SharedCarProperties.oxigen > 0) {
+            Temperature += TEMPERATURE_STEP;        
+        } else {
+            Temperature -= TEMPERATURE_STEP;
+        }
+    
+        if(Temperature >= MAX_TEMPERATURE){
+            Temperature = MAX_TEMPERATURE;
+        } else if (Temperature <= MIN_TEMPERATURE) {
+            Temperature = MIN_TEMPERATURE;
+        }
+    }, TimingSharedProperties.temperatureDeltaTime);
 
     addressSpace.addVariable({
       componentOf: Engine,

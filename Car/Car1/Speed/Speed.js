@@ -1,110 +1,181 @@
 var opcua = require("node-opcua");
 
 module.exports = {
-  Speed: function(server,addressSpace,Car) {
-    var refreshIntervalId=0;
+    Speed: function(server, addressSpace, Car, SharedCarProperties, TimingSharedProperties) {
+        var refreshIntervalId = 0;
+        var oldAcceleration = 0;
+        var oldSpeed = 0;
 
-    /*var Speed = addressSpace.addObject({
-      organizedBy: addressSpace.rootFolder.objects.cars,
-      browseName: "Speed"
-    });
-*/
-    var carSpeed = 0;
-    addressSpace.addVariable({
-      componentOf: Car,
-      nodeId: "ns=1;s=Speed", // some opaque NodeId in namespace 4
-      browseName: "Speed",
-      dataType: "Double",
-      value: {
-        get: function () {
-          return new opcua.Variant({dataType: opcua.DataType.Double, value: carSpeed });
+        function accelerate(accelerationStep) {
+            SharedCarProperties.acceleration += accelerationStep;
+            
+            var Accelerate = SharedCarProperties.acceleration;
+
+            SharedCarProperties.stopped = false;
+            SharedCarProperties.oxigenBoost = 0;        
+
+            // The overshoot is available only during acceleration
+
+            // Uncomment rows (1) to disable undershoots for negative accelerations
+            // (1) if(Accelerate > 0) {
+
+                if((SharedCarProperties.speed != SharedCarProperties.MAX_SPEED || Accelerate < 0) && (SharedCarProperties.speed != 0 || Accelerate > 0)) {
+                    accelerationDelta = Accelerate - oldAcceleration;           
+                  
+                    if(accelerationDelta != 0) {
+                        if(accelerationDelta > 0) {                    
+                            SharedCarProperties.boostDirection = 1;
+                            SharedCarProperties.boost = 1; // triggering an overshoot
+                        } else if(accelerationDelta < 0 && SharedCarProperties.speed != 0) {
+                            SharedCarProperties.boostDirection = -1;                 
+                            SharedCarProperties.boost = 1; // triggering an undershoot  
+                        }
+                    }
+                }
+            // (1) }
+
+            oldAcceleration = Accelerate;
+
+            // Minimun acceleration delta time is 100ms
+            if(TimingSharedProperties.accelerationDeltaTime == 0) {
+                TimingSharedProperties.accelerationDeltaTime = 100;
+            }       
+
+            if (refreshIntervalId != 0){
+           	    clearInterval(refreshIntervalId);
+         	};
+
+            refreshIntervalId = setInterval(function(){
+                // The second factor enables the change of the time resolution
+                SharedCarProperties.speed += Accelerate * (TimingSharedProperties.accelerationDeltaTime / 1000);
+                
+                if(SharedCarProperties.speed >= SharedCarProperties.MAX_SPEED) {
+                    SharedCarProperties.speed = SharedCarProperties.MAX_SPEED;
+                } else if(SharedCarProperties.speed <= 0) {
+                    SharedCarProperties.speed = 0;
+                }
+
+                // Update instantaneous acceleration
+                SharedCarProperties.acceleration = SharedCarProperties.speed - oldSpeed;
+                oldSpeed = SharedCarProperties.speed;
+            }, TimingSharedProperties.accelerationDeltaTime);
+
+            console.log("Accelerating... !");
         }
-      }
-    });
 
-    var Stop = addressSpace.addMethod(Car,{
-      nodeId: "ns=1;s=Stop", // some opaque NodeId in namespace 4
-      browseName: "Stop",
+        /*
+        var Speed = addressSpace.addObject({
+          organizedBy: addressSpace.rootFolder.objects.cars,
+          browseName: "Speed"
+        });
+        */
 
-    });
+        addressSpace.addVariable({
+            componentOf: Car,
+            nodeId: "ns=1;s=Speed", // some opaque NodeId in namespace 4
+            browseName: "Speed",
+            dataType: "Double",
+            value: {
+                get: function () {
+                  return new opcua.Variant({dataType: opcua.DataType.Double, value: SharedCarProperties.speed});
+                }
+            }
+        });
 
-    Stop.bindMethod(function(inputArguments,context,callback) {
+        addressSpace.addVariable({
+            componentOf: Car,
+            nodeId: "ns=1;s=Acceleration", // some opaque NodeId in namespace 4
+            browseName: "Acceleration",
+            dataType: "Double",
+            value: {
+                get: function () {
+                  return new opcua.Variant({dataType: opcua.DataType.Double, value: SharedCarProperties.acceleration});
+                }
+            }
+        });
 
-      if (refreshIntervalId!=0){
-        clearInterval(refreshIntervalId);
-      };
-    carSpeed = 0;
+        addressSpace.addVariable({
+            componentOf: Car,
+            nodeId: "ns=1;s=EngineStatus", // some opaque NodeId in namespace 4
+            browseName: "EngineStatus",
+            dataType: "Boolean",
+            value: {
+                get: function () {
+                  return new opcua.Variant({dataType: opcua.DataType.Boolean, value: SharedCarProperties.stopped});
+                }
+            }
+        });
 
-    console.log("CAR STOPPED!");
+        // Start/Stop function
+        var Stop = addressSpace.addMethod(Car,{
+            nodeId: "ns=1;s=Stop", // some opaque NodeId in namespace 4
+            browseName: "Stop"
+        });
 
-    var callMethodResult = {
-            statusCode: opcua.StatusCodes.Good,
-            outputArguments: [{
-                     dataType: opcua.DataType.String,
-           arrayType: opcua.VariantArrayType.Array,
-          value :["Stopped to "+carSpeed]
-            }]
-        };
-        callback(null,callMethodResult);
-});
+        Stop.bindMethod(function(inputArguments, context, callback) {
+
+            // if (refreshIntervalId != 0) {
+            //  clearInterval(refreshIntervalId);
+            // };
+
+            if(SharedCarProperties.stopped == false) {
+                // Car isn't stopped, stop it
+                accelerate(-(SharedCarProperties.acceleration + 5));
+                SharedCarProperties.stopped = true;
+            } else {
+                // Car is stopped, start it
+                SharedCarProperties.stopped = false;
+                accelerate(-SharedCarProperties.acceleration);
+            }
+
+            console.log("CAR STOPPED!");
+
+            var callMethodResult = {
+                statusCode: opcua.StatusCodes.Good,
+                outputArguments: [{
+                         dataType: opcua.DataType.String,
+                         arrayType: opcua.VariantArrayType.Array,
+                         value :["Stopped to " + SharedCarProperties.speed]
+                }]
+            };
+            callback(null, callMethodResult);
+        });
 
 
-    var Accelerate = addressSpace.addMethod(Car,{
-      nodeId: "ns=1;s=Accelerate", // some opaque NodeId in namespace 4
-      browseName: "Accelerate",
+        var Accelerate = addressSpace.addMethod(Car, {
+            nodeId: "ns=1;s=Accelerate", // some opaque NodeId in namespace 4
+            browseName: "Accelerate",
 
-      inputArguments:  [
-        {
-          name:"Intensity",
-          description: { text: "specifies the acceleration intensity [0 = slow ,10 = fast]" },
-          dataType: opcua.DataType.UInt32
-        }
-      ],
+            inputArguments:  [
+            {
+              name:"Intensity",
+              description: { text: "specifies the acceleration intensity [0 = slow ,10 = fast]" },
+              dataType: opcua.DataType.Int32
+            }],
 
+            outputArguments: [
+            {
+              name:"Accelerated",
+              description:{ text: "Accelerated" },
+              dataType: opcua.DataType.String,
+               arrayType: opcua.VariantArrayType.Array,
+              value :["Accelerated from " + SharedCarProperties.speed]
+            }],
+        });
 
+            
+        Accelerate.bindMethod(function(inputArguments, context, callback) {
+            accelerate(inputArguments[0].value);
 
-
-
-
-      outputArguments: [
-
-        {
-          name:"Accelerated",
-          description:{ text: "Accelerated" },
-          dataType: opcua.DataType.String,
-           arrayType: opcua.VariantArrayType.Array,
-          value :["Accelerated from "+carSpeed]
-        }],
-      });
-
-      Accelerate.bindMethod(function(inputArguments,context,callback) {
-
-        var Accelerate =  inputArguments[0].value;
-		if (refreshIntervalId!=0){
-       	 	clearInterval(refreshIntervalId);
-     	 };
-
-        refreshIntervalId = setInterval(function(){
-          if(carSpeed<150){
-            carSpeed+=1;
-          };
-          if(carSpeed>=150){
-            carSpeed=150;
-          };
-
-        }, 5000/Accelerate);
-
-        console.log("Accelerating... !");
-
-        var callMethodResult = {
-            statusCode: opcua.StatusCodes.Good,
-            outputArguments: [{
-                     dataType: opcua.DataType.String,
-           arrayType: opcua.VariantArrayType.Array,
-          value :["Accelerated from "+carSpeed]
-            }]
-        };
-        callback(null,callMethodResult);
-  });
-}
+            var callMethodResult = {
+                statusCode: opcua.StatusCodes.Good,
+                outputArguments: [{
+                    dataType: opcua.DataType.String,
+                    arrayType: opcua.VariantArrayType.Array,
+                    value :["Accelerated from "+SharedCarProperties.speed]
+                }]
+            };
+            callback(null,callMethodResult);
+        });
+    }
 }
