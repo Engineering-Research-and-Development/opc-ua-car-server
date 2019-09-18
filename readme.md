@@ -9,6 +9,8 @@ A simple server that represents a car with the follow structure:
     * Engine (obj)
         * Temperature (attr)
         * Oxygen (attr)
+    * Sensors
+        * Any number of user-defined sensors
 
 ![Car Schema](https://github.com/Engineering-Research-and-Development/opc-ua-car-server/blob/master/img/car_schema.png)
 
