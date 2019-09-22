@@ -11,7 +11,7 @@
   "author": "Engineering",
   "license": "ISC",
   "dependencies": {
-    "csv": "^3.0.2",
+    "csv": "^5.0.0",
     "node-opcua": "0.0.61",
     "npm": "^6.6.0",
     "semver": "^5.5.0",
