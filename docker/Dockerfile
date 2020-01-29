@@ -73,10 +73,10 @@ RUN \
 	apt-get -y autoremove && \
 	chmod +x docker/entrypoint.sh
 
-USER node
+# USER node
 ENV NODE_ENV=production
 
 # Expose 5001 for OPC-UA Car Server
-EXPOSE ${OPC-UA_PORT:-5001} 
+EXPOSE 5001
 
 ENTRYPOINT ["docker/entrypoint.sh"]
