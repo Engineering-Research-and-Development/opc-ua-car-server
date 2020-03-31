@@ -19,7 +19,7 @@ A simple server that represents a car with the follow structure:
 
     $ git clone "https://github.com/Engineering-Research-and-Development/opc-ua-car-server"
     $ cd opc-ua-car-server
-    $ npm install
+    $ npm install --unsafe-perm
     $ node car.js
     
 ### Car model behavioural specs
