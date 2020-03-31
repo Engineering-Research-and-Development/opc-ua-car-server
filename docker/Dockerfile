@@ -66,7 +66,7 @@ RUN \
 	# Ensure that Git is installed prior to running npm install
 	apt-get update && \
 	apt-get install -y git && \
-	npm install --production && \
+	npm install --unsafe-perm --production && \
 	# Remove Git and clean apt cache
 	apt-get clean && \
 	apt-get remove -y git && \
