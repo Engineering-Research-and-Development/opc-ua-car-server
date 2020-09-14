@@ -7,66 +7,66 @@ module.exports = {
     var oldSpeed = 0;
 
     function accelerate(accelerationStep) {
-        SharedCarProperties.acceleration += accelerationStep;
+      SharedCarProperties.acceleration += accelerationStep;
+
+      var Accelerate = SharedCarProperties.acceleration;
+
+      SharedCarProperties.stopped = false;
+      SharedCarProperties.oxigenBoost = 0;        
+
+      // The overshoot is available only during acceleration
+
+      // Uncomment rows (1) to disable undershoots for negative accelerations
+      // (1) if(Accelerate > 0) {
+
+      if((SharedCarProperties.speed != SharedCarProperties.MAX_SPEED || Accelerate < 0) && (SharedCarProperties.speed != 0 || Accelerate > 0)) {
+        accelerationDelta = Accelerate - oldAcceleration;           
+      
+        if(accelerationDelta != 0) {
+          if(accelerationDelta > 0) {                    
+            SharedCarProperties.boostDirection = 1;
+            SharedCarProperties.boost = 1; // triggering overshoot
+          } else if(accelerationDelta < 0 && SharedCarProperties.speed != 0) {
+            SharedCarProperties.boostDirection = -1;                 
+            SharedCarProperties.boost = 1; // triggering undershoot  
+          }
+        }
+      }
+      // (1) }
+
+      oldAcceleration = Accelerate;
+
+      // Minimun acceleration delta time is 100ms
+      if(TimingSharedProperties.accelerationDeltaTime == 0) {
+          TimingSharedProperties.accelerationDeltaTime = 100;
+      }       
+
+      if (refreshIntervalId != 0){
+          clearInterval(refreshIntervalId);
+      };
+
+      refreshIntervalId = setInterval(function(){
+        // The second factor enables the change of the time resolution
+        SharedCarProperties.speed += Accelerate * (TimingSharedProperties.accelerationDeltaTime / 1000);
         
-        var Accelerate = SharedCarProperties.acceleration;
+        if(SharedCarProperties.speed >= SharedCarProperties.MAX_SPEED) {
+          SharedCarProperties.speed = SharedCarProperties.MAX_SPEED;
+        } else if(SharedCarProperties.speed <= 0) {
+          SharedCarProperties.speed = 0;
+        }
 
-        SharedCarProperties.stopped = false;
-        SharedCarProperties.oxigenBoost = 0;        
+        // Update instantaneous acceleration
+        SharedCarProperties.acceleration = SharedCarProperties.speed - oldSpeed;
+        oldSpeed = SharedCarProperties.speed;
+      }, TimingSharedProperties.accelerationDeltaTime);
 
-        // The overshoot is available only during acceleration
-
-        // Uncomment rows (1) to disable undershoots for negative accelerations
-        // (1) if(Accelerate > 0) {
-
-            if((SharedCarProperties.speed != SharedCarProperties.MAX_SPEED || Accelerate < 0) && (SharedCarProperties.speed != 0 || Accelerate > 0)) {
-                accelerationDelta = Accelerate - oldAcceleration;           
-              
-                if(accelerationDelta != 0) {
-                    if(accelerationDelta > 0) {                    
-                        SharedCarProperties.boostDirection = 1;
-                        SharedCarProperties.boost = 1; // triggering overshoot
-                    } else if(accelerationDelta < 0 && SharedCarProperties.speed != 0) {
-                        SharedCarProperties.boostDirection = -1;                 
-                        SharedCarProperties.boost = 1; // triggering undershoot  
-                    }
-                }
-            }
-        // (1) }
-
-        oldAcceleration = Accelerate;
-
-        // Minimun acceleration delta time is 100ms
-        if(TimingSharedProperties.accelerationDeltaTime == 0) {
-            TimingSharedProperties.accelerationDeltaTime = 100;
-        }       
-
-        if (refreshIntervalId != 0){
-       	    clearInterval(refreshIntervalId);
-     	};
-
-        refreshIntervalId = setInterval(function(){
-            // The second factor enables the change of the time resolution
-            SharedCarProperties.speed += Accelerate * (TimingSharedProperties.accelerationDeltaTime / 1000);
-            
-            if(SharedCarProperties.speed >= SharedCarProperties.MAX_SPEED) {
-                SharedCarProperties.speed = SharedCarProperties.MAX_SPEED;
-            } else if(SharedCarProperties.speed <= 0) {
-                SharedCarProperties.speed = 0;
-            }
-
-            // Update instantaneous acceleration
-            SharedCarProperties.acceleration = SharedCarProperties.speed - oldSpeed;
-            oldSpeed = SharedCarProperties.speed;
-        }, TimingSharedProperties.accelerationDeltaTime);
-
-        console.log("Accelerating... !");
+      console.log("Accelerating... !");
     }
 
     /*
     var Speed = addressSpace.addObject({
-      organizedBy: addressSpace.rootFolder.objects.cars,
-      browseName: "Speed"
+    organizedBy: addressSpace.rootFolder.objects.cars,
+    browseName: "Speed"
     });
     */
 
@@ -113,32 +113,32 @@ module.exports = {
     });
 
     Stop.bindMethod(function(inputArguments, context, callback) {
-
       // if (refreshIntervalId != 0) {
       //  clearInterval(refreshIntervalId);
       // };
-
       if(SharedCarProperties.stopped == false) {
-          // Car isn't stopped, stop it
-          accelerate(-(SharedCarProperties.acceleration + 5));
-          SharedCarProperties.stopped = true;
+        // Car isn't stopped, stop it
+        accelerate(-(SharedCarProperties.acceleration + 5));
+        SharedCarProperties.stopped = true;
       } else {
-          // Car is stopped, start it
-          SharedCarProperties.stopped = false;
-          accelerate(-SharedCarProperties.acceleration);
+        // Car is stopped, start it
+        SharedCarProperties.stopped = false;
+        accelerate(-SharedCarProperties.acceleration);
       }
 
       console.log("CAR STOPPED!");
 
-        var callMethodResult = {
-            statusCode: opcua.StatusCodes.Good,
-            outputArguments: [{
-                     dataType: opcua.DataType.String,
-                     arrayType: opcua.VariantArrayType.Array,
-                     value :["Stopped to " + SharedCarProperties.speed]
-            }]
-        };
-        callback(null, callMethodResult);
+      var callMethodResult = {
+        statusCode: opcua.StatusCodes.Good,
+        outputArguments: [
+          {
+            dataType: opcua.DataType.String,
+            arrayType: opcua.VariantArrayType.Array,
+            value :["Stopped to " + SharedCarProperties.speed]
+          }
+        ]
+      };
+      callback(null, callMethodResult);
     });
 
 
@@ -159,25 +159,29 @@ module.exports = {
           name:"Accelerated",
           description:{ text: "Accelerated" },
           dataType: opcua.DataType.String,
-           arrayType: opcua.VariantArrayType.Array,
+          arrayType: opcua.VariantArrayType.Array,
           value :["Accelerated from " + SharedCarProperties.speed]
-        }],
-      });
+        }
+      ]
+    });
 
-        
-      Accelerate.bindMethod(function(inputArguments, context, callback) {
-        
-        accelerate(inputArguments[0].value);
 
-        var callMethodResult = {
-            statusCode: opcua.StatusCodes.Good,
-            outputArguments: [{
-                     dataType: opcua.DataType.String,
-                     arrayType: opcua.VariantArrayType.Array,
-                     value :["Accelerated from "+SharedCarProperties.speed]
-            }]
-        };
-        callback(null,callMethodResult);
-  });
-}
+    Accelerate.bindMethod(function(inputArguments, context, callback) {
+
+      accelerate(inputArguments[0].value);
+
+      var callMethodResult = {
+        statusCode: opcua.StatusCodes.Good,
+        outputArguments:[ 
+          {
+            dataType: opcua.DataType.String,
+            arrayType: opcua.VariantArrayType.Array,
+            value :["Accelerated from "+SharedCarProperties.speed]
+          }
+        ]
+      };
+      
+      callback(null,callMethodResult);
+    });
+  }
 }

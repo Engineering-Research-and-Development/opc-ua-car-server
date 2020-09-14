@@ -1,6 +1,7 @@
 var opcua = require("node-opcua");
 var engine_obj = require("./Engine/Engine");
 var speed_obj = require("./Speed/Speed");
+var err_obj = require("./Error/Error");
 var sensors_obj = require("./Sensors/Sensors");
 
 module.exports ={
@@ -35,6 +36,7 @@ module.exports ={
 
     var namespaceIndex = 3;
 
+    err_obj.Error(server, namespaceIndex, namespace /* addressSpace */, CarObject, SharedCarProperties, TimingSharedProperties);
     speed_obj.Speed(server, namespaceIndex, namespace /* addressSpace */, CarObject, SharedCarProperties, TimingSharedProperties);
     engine_obj.Engine(server, namespaceIndex, namespace /* addressSpace */, CarObject, SharedCarProperties, TimingSharedProperties);
 
