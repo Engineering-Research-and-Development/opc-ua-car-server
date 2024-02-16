@@ -1,0 +1,49 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:extend:20180424':
+    - npm > request > extend:
+        patched: '2024-02-16T10:10:53.082Z'
+        id: 'npm:extend:20180424'
+        path: npm > request > extend
+    - npm > node-gyp > request > extend:
+        patched: '2024-02-16T10:10:53.082Z'
+        id: 'npm:extend:20180424'
+        path: npm > node-gyp > request > extend
+    - npm > npm-registry-client > request > extend:
+        patched: '2024-02-16T10:10:53.082Z'
+        id: 'npm:extend:20180424'
+        path: npm > npm-registry-client > request > extend
+    - npm > npm-lifecycle > node-gyp > request > extend:
+        patched: '2024-02-16T10:10:53.082Z'
+        id: 'npm:extend:20180424'
+        path: npm > npm-lifecycle > node-gyp > request > extend
+  SNYK-JS-HTTPSPROXYAGENT-469131:
+    - npm > npm-registry-fetch > make-fetch-happen > https-proxy-agent:
+        patched: '2024-02-16T10:10:53.082Z'
+        id: SNYK-JS-HTTPSPROXYAGENT-469131
+        path: npm > npm-registry-fetch > make-fetch-happen > https-proxy-agent
+  'npm:lodash:20180130':
+    - npm > npm-audit-report > cli-table2 > lodash:
+        patched: '2024-02-16T10:10:53.082Z'
+        id: 'npm:lodash:20180130'
+        path: npm > npm-audit-report > cli-table2 > lodash
+  'npm:stringstream:20180511':
+    - npm > request > stringstream:
+        patched: '2024-02-16T10:10:53.082Z'
+        id: 'npm:stringstream:20180511'
+        path: npm > request > stringstream
+    - npm > node-gyp > request > stringstream:
+        patched: '2024-02-16T10:10:53.082Z'
+        id: 'npm:stringstream:20180511'
+        path: npm > node-gyp > request > stringstream
+    - npm > npm-registry-client > request > stringstream:
+        patched: '2024-02-16T10:10:53.082Z'
+        id: 'npm:stringstream:20180511'
+        path: npm > npm-registry-client > request > stringstream
+    - npm > npm-lifecycle > node-gyp > request > stringstream:
+        patched: '2024-02-16T10:10:53.082Z'
+        id: 'npm:stringstream:20180511'
+        path: npm > npm-lifecycle > node-gyp > request > stringstream

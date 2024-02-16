@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "npm run snyk-protect",
+    "snyk-protect": "snyk-protect"
   },
   "license": "ISC",
   "description": "OPC-UA Car Server",
@@ -27,10 +29,12 @@
     "url": "https://github.com/Engineering-Research-and-Development/opc-ua-car-server/issues"
   },
   "dependencies": {
-    "csv": "^3.0.2",
+    "csv": "^5.0.0",
     "node-opcua": "^2.74.0",
-    "npm": "^5.8.0",
+    "npm": "^7.21.0",
     "semver": "^5.7.2",
-    "nanotimer": "0.3.15"
-  }
+    "nanotimer": "0.3.15",
+    "@snyk/protect": "latest"
+  },
+  "snyk": true
 }
