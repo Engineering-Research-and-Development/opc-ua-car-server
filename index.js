@@ -26,6 +26,7 @@ function post_initialize() {
     var TimingSharedProperties = {
         "accelerationDeltaTime": 1000,
         "temperatureDeltaTime": 1000,
+        "pressuresDeltaTime": 1000,
         "oxigenDeltaTime": 1000
     }
 

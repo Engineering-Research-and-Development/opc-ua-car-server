@@ -78,6 +78,10 @@ module.exports = {
       value: {
         get: function () {
           return new opcua.Variant({dataType: opcua.DataType.Double, value: SharedCarProperties.speed});
+        },
+        set: function (dataValue) {
+          SharedCarProperties.speed = dataValue.value;
+          return new opcua.Variant({dataType: opcua.DataType.Double, value: SharedCarProperties.speed});
         }
       }
     });
