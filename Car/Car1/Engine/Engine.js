@@ -1,5 +1,6 @@
 var temperature = require("./Temperature_datagenerator");
 var oxigen = require("./Oxigen_datagenerator");
+var pressures = require("./Pressures_datagenerator");
 
 module.exports = {
   Engine: function(server, namespaceIndex, namespace /* addressSpace */, Car, SharedCarProperties, TimingSharedProperties) {
@@ -11,5 +12,6 @@ module.exports = {
 
     temperature.Temperature_datagenerator(namespaceIndex, namespace /* addressSpace */, SharedCarProperties, TimingSharedProperties, Engine);
     oxigen.Oxigen_datagenerator(namespaceIndex, namespace /* addressSpace */, SharedCarProperties, TimingSharedProperties, Engine);
+    pressures.Pressures_datagenerator(namespaceIndex, namespace /* addressSpace */, SharedCarProperties, TimingSharedProperties, Engine);
   }
 }
