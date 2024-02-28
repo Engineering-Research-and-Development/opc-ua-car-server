@@ -31,7 +31,8 @@ module.exports ={
       "stopped": true,        // stopped = 1 (car stopped), stopped = 0 (car started)
       "oxigen": 0,            // the oxigen value
       "MAX_SPEED": 150,
-      "acceleration": 0       // Car acceleration value
+      "acceleration": 0,      // Car acceleration value,
+      "pressures": [0,0,0]    // Car pressure values
   };
 
     var namespaceIndex = 3;
