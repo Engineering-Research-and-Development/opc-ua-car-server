@@ -3,7 +3,7 @@
 # This file is part of the IoT Agent for the Ultralight 2.0 protocol (IOTAUL) component
 #
 
-ARG NODE_VERSION=10.17.0-slim
+ARG NODE_VERSION=16.20.0-slim
 FROM node:${NODE_VERSION}
 ARG GITHUB_ACCOUNT=Engineering-Research-and-Development
 ARG GITHUB_REPOSITORY=opc-ua-car-server
@@ -50,7 +50,7 @@ RUN if [ "${DOWNLOAD}" = "latest" ] ; \
 	RELEASE_CONCAT=$(echo "${RELEASE}" | tr / -); \
 	# Ensure that unzip is installed, and download the sources
 	apt-get update && \
-	apt-get install -y  --no-install-recommends unzip && \
+	apt-get install -y  --no-install-recommends unzip wget && \
 	wget --no-check-certificate -O source.zip https://github.com/"${GITHUB_ACCOUNT}"/"${GITHUB_REPOSITORY}"/archive/"${RELEASE}".zip && \
 	unzip source.zip && \
 	rm source.zip && \
