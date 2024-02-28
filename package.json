@@ -15,10 +15,16 @@
     "opc-ua server",
     "opc ua server"
   ],
-  "author": {
-    "name": "Gabriele De Luca",
-    "email": "gabriele.deluca@eng.it"
-  },
+  "contributors": [
+    {
+      "name": "Walter Domenico Vergara",
+      "email": "walterdomenico.vergara@eng.it"
+    },
+    {
+      "name": "Manfredi Giuseppe Pistone",
+      "email": "manfredi.pistone@eng.it"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Engineering-Research-and-Development/opc-ua-car-server.git"
