@@ -1,5 +1,7 @@
 var opcua = require("node-opcua");
 var carAS = require("./Car/Car1/Car_object");
+var os = require("os");
+var hostname = os.hostname();
 
 const config = require('./config');
 
@@ -33,10 +35,10 @@ function post_initialize() {
     carAS.construct_my_address_space(server, TimingSharedProperties);
 
     server.start(function() {
-        console.log("Server is now listening ... ( press CTRL+C to stop)");
-        console.log("port ", server.endpoints[0].port);
-        var endpointUrl = server.endpoints[0].endpointDescriptions()[0].endpointUrl;
-        console.log(" the primary server endpoint url is ", endpointUrl );
+        console.log("Server is now listening ... (press CTRL+C to stop)");
+        const url = "opc.tcp://" + hostname + ":" + server.options.port + server.options.resourcePath;
+        console.log("Primary server endpoint URL is ", url)
+        console.log("\nServer options:\n", server.options);
     });
 
 }
