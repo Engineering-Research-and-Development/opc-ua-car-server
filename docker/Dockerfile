@@ -77,7 +77,6 @@ RUN \
 	apt-get -y autoremove
 
 # USER node
-ENV NODE_ENV=production
 
 # Expose 5001 for OPC-UA Car Server
 EXPOSE 5001

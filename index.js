@@ -14,7 +14,7 @@ var server = new opcua.OPCUAServer({
     buildInfo : {
 		productName: config.productName,
         buildNumber: "30620",
-        buildDate: new Date(2020,06,30)
+        buildDate: new Date(2020,6,30)
     },
   	serverCertificateManager: new opcua.OPCUACertificateManager({
   		automaticallyAcceptUnknownCertificate: true,
