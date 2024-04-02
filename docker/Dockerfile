@@ -3,8 +3,7 @@
 # This file is part of the IoT Agent for the Ultralight 2.0 protocol (IOTAUL) component
 #
 
-ARG NODE_VERSION=16.20.0-slim
-FROM node:${NODE_VERSION}
+ARG NODE_VERSION=20
 ARG GITHUB_ACCOUNT=Engineering-Research-and-Development
 ARG GITHUB_REPOSITORY=opc-ua-car-server
 ARG DOWNLOAD=latest
@@ -14,11 +13,13 @@ ARG SOURCE_BRANCH=master
 # inspected within a running container.
 # see: https://vsupalov.com/docker-build-time-env-values/  for a deeper explanation.
 
-ENV GITHUB_ACCOUNT=${GITHUB_ACCOUNT}
-ENV GITHUB_REPOSITORY=${GITHUB_REPOSITORY}
-ENV DOWNLOAD=${DOWNLOAD}
+FROM node:${NODE_VERSION} AS builder
+ARG GITHUB_ACCOUNT
+ARG GITHUB_REPOSITORY
+ARG DOWNLOAD
+ARG SOURCE_BRANCH
 
-MAINTAINER Engineering Ingegneria Informatica S.p.A.
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 #
 # The following RUN command retrieves the source code from GitHub.
@@ -34,8 +35,14 @@ MAINTAINER Engineering Ingegneria Informatica S.p.A.
 # replace the whole RUN statement by the following COPY statement in your local source using :
 #
 # COPY . /opt/opc-ua-car
-#
-RUN if [ "${DOWNLOAD}" = "latest" ] ; \
+
+RUN \
+	# Install security updates
+	apt-get update -y && \
+	apt-get upgrade -y && \
+	# Ensure that unzip is installed prior to downloading
+	apt-get install -y --no-install-recommends unzip && \
+	if [ "${DOWNLOAD}" = "latest" ] ; \
 	then \
 		RELEASE="${SOURCE_BRANCH}"; \
 		echo "INFO: Building Latest Development from ${SOURCE_BRANCH} branch."; \
@@ -48,35 +55,34 @@ RUN if [ "${DOWNLOAD}" = "latest" ] ; \
 	 	echo "INFO: Building Release: ${RELEASE}"; \
 	fi && \
 	RELEASE_CONCAT=$(echo "${RELEASE}" | tr / -); \
-	# Ensure that unzip is installed, and download the sources
-	apt-get update && \
-	apt-get install -y  --no-install-recommends unzip wget && \
-	wget --no-check-certificate -O source.zip https://github.com/"${GITHUB_ACCOUNT}"/"${GITHUB_REPOSITORY}"/archive/"${RELEASE}".zip && \
-	unzip source.zip && \
+	curl -s -L https://github.com/"${GITHUB_ACCOUNT}"/"${GITHUB_REPOSITORY}"/archive/"${RELEASE}".zip > source.zip && \
+	unzip source.zip -x "*/test/**" "*/rpm/**" "*/ghpages/**" "*/docs/**" "*/.*" && \
 	rm source.zip && \
 	mv "${GITHUB_REPOSITORY}-${RELEASE_CONCAT}" /opt/opc-ua-car && \
 	# Remove unzip and clean apt cache
 	apt-get clean && \
 	apt-get remove -y unzip && \
-	apt-get -y autoremove
+	apt-get -y autoremove && \
+	rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/opc-ua-car
 
+# hadolint ignore=DL3008
 RUN \
 	# Ensure that Git is installed prior to running npm install
-	apt-get update && \
-	apt-get install -y git && \
-	npm install --unsafe-perm --production && \
+	echo "INFO: npm install --production..." && \
+	npm install --only=prod --no-package-lock --no-optional && \
 	# Remove Git and clean apt cache
 	apt-get clean && \
-	apt-get remove -y git && \
-	apt-get -y autoremove && \
-	chmod +x docker/entrypoint.sh
+	apt-get -y autoremove
 
 # USER node
 ENV NODE_ENV=production
 
 # Expose 5001 for OPC-UA Car Server
 EXPOSE 5001
+
+RUN \
+	chmod +x "docker/entrypoint.sh"
 
 ENTRYPOINT ["docker/entrypoint.sh"]
